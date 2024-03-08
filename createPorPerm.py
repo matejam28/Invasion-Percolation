@@ -10,7 +10,7 @@ def porToPerm(por):
 
 mu = 0.20
 variance = 0.001
-nn=100
+nn=64
 
 x = y = z = range(nn)
 model = Gaussian(dim=3, var=variance, len_scale=10)
@@ -21,11 +21,14 @@ poroFile=open('PORO.INC','w')
 poroFile.write('PORO \n')
 permFile=open('PERM.INC','w')
 permFile.write('PERMX \n')
-for por in field:
-	for poro in por:
-		for poros in poro:
-			poroFile.write(str(poro)+'\n')
-			permFile.write(str(porToPerm(poro))+'\n')
+for poro in field.flatten():
+	poroFile.write(str(poro)+'\n')
+	permFile.write(str(porToPerm(poro))+'\n')
+# for por in field:
+# 	for poro in por:
+# 		for poros in poro:
+# 			poroFile.write(str(poro)+'\n')
+# 			permFile.write(str(porToPerm(poro))+'\n')
 poroFile.write('/ \n')
 permFile.write('/ \n')
 poroFile.close()
