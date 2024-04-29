@@ -1,0 +1,238 @@
+
+RUNSPEC
+-- --------------------------------------------------
+
+TITLE
+ 2D model for CO2 convection
+
+-- This is a two-dimensional model, where one
+-- dimension is hortizontal, and the second is
+-- vertical.
+DIMENS
+   64 64 64 /
+
+TABDIMS
+ /
+
+-- Even though we simulate a system with a brine
+-- phase and a CO2 phase, we use the OIL keyword
+-- for brine to allow for the dissolution of the
+-- CO2 (GAS) component into the brine (OIL) phase.
+OIL
+GAS
+DISGAS
+
+DIFFUSE
+
+-- This keyword activates the black oil CO2 storage
+-- model in Flow. This invokes the CO2-brine PVT
+-- models for CO2 storage.
+CO2STORE
+
+
+--DIFFUSE
+
+METRIC
+
+START
+   1 'JAN' 2015 /
+
+WELLDIMS
+-- Item 1: maximum number of wells in the model
+-- 	   - there are two wells in the problem;
+--           injector and producer
+-- Item 2: maximum number of grid blocks connected
+--  to any one well
+-- 	   - must be one as the wells are located
+--           at specific grid blocks
+-- Item 3: maximum number of groups in the model
+-- 	   - we are dealing with only one 'group'
+-- Item 4: maximum number of wells in any one group
+-- 	   - there must be two wells in a group
+--           as there are two wells in total
+   3 2 1 3 /
+
+-- The UNIFOUT keyword is used to request the
+-- output files to be on a unified format, i.e.
+-- the output from different timesteps are
+-- collected into a single file.
+UNIFOUT
+
+GRID
+-- --------------------------------------------------
+
+-- The INIT keyword is used to request an .INIT file.
+-- The .INIT file is written before the simulation
+-- actually starts, and contains grid properties and
+-- saturation tables as inferred from the input
+-- deck. There are no other keywords which can be
+-- used to configure exactly what is written to
+-- the .INIT file.
+INIT
+
+DX 
+-- There are in total 100 cells with length 10.0m
+-- in x-direction and 1.0 meters in z-direction.
+   	262144*1 /
+
+DY
+   	262144*1 /
+
+DZ 
+   	262144*1 /
+
+TOPS
+-- The depth of the top of each grid block
+	10000*1000 /
+
+INCLUDE
+ 'PORO.INC' /
+/
+
+INCLUDE
+ 'PERM.INC' /
+/
+
+
+COPY
+ 'PERMX' 'PERMY' /
+ 'PERMX' 'PERMZ' /
+/
+
+
+PROPS
+-- -------------------------------------------------
+
+-- Rock compressibility
+ROCK
+-- REF.PRES   COMPRESSIBILITY
+--  (bars)        (1/bars)
+   1.0000         1.0E-06 / 
+/
+
+-- Brooks-Corey with coefficient 2.8 and
+-- entry pressure 2.5kPa (Cavanagh. A. 2013)
+SGOF
+-- Column 1: gas saturation
+-- Column 2: gas relative permeability
+-- Column 3: oil relative permeability when oil,
+-- gas and connate water are present
+-- Column 4: oil-gas capillary pressure
+0.0	0.0	1.0 	0.025
+0.1	0.0     0.740	0.026
+0.2	0.009	0.528	0.027
+0.3	0.030	0.359	0.028
+0.4	0.070	0.230	0.030
+0.5	0.136	0.136	0.032
+0.6	0.230	0.070	0.035
+0.7	0.359	0.030	0.038
+0.8	0.528	0.009	0.044
+0.9	0.740	0.000	0.057 /
+
+
+-- The CO2STORE keyword require the salinity for all
+-- grid cells.
+SALINITY
+0.7 / --10E-3 M kg per kg
+
+--DIFFC
+-- 4* 3E-9 /
+
+REGIONS
+
+INCLUDE
+ 'FIPNUM.INC' /
+ 
+
+SOLUTION
+-- -------------------------------------------------
+
+-- Initial brine (OIL) saturation for each grid cell
+-- We have only water (OIL), so the saturation is
+-- put equal to 1.0.
+SGAS
+  262144*0.0
+/
+
+-- RS
+--  100000*27.0
+--  400000*0.0
+-- /
+RS
+ 262144*0.0
+/
+
+-- Initial pressure
+PRESSURE
+  262144*200.0
+/
+
+
+SUMMARY
+-- -------------------------------------------------
+
+-- This keyword enable printing out all the most
+-- commonly used data.
+ALL
+
+-- This keyword enable printing out the
+-- cummulative CPU use at different time steps. 
+TCPU
+
+
+SCHEDULE
+-- -------------------------------------------------
+
+RPTSCHED
+  'DENS' /
+
+-- This keyword enable printing out restart files.
+RPTRST
+  BASIC=2 /
+
+
+--DRSDTCON
+-- This parameter controls the rate of dissolution
+-- of CO2 (GAS) into the brine phase (OIL)
+-- 10.0 /
+
+
+-- DRSDTCON --Special keyword for CO2STORE
+--  0.034 /
+
+TSTEP
+ 10*0.01 /
+
+TSTEP
+ 10*1 /
+
+
+WELSPECS
+ INJ I 32 32 * GAS /
+/
+
+COMPDAT
+ INJ 32 32 55 55 OPEN -1 * * 0.2 /
+/
+
+WCONINJE
+ INJ GAS OPEN RATE 1E4 * 300  *  /
+/
+
+
+--TSTEP
+-- 6000*0.001 /
+
+TSTEP
+ 120*1 /
+
+
+WCONINJE
+ INJ GAS SHUT RATE 1E5 * 300  *  /
+/
+
+TSTEP
+ 120*1 /
+
+
+END
